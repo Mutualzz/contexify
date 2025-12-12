@@ -1,15 +1,15 @@
-import React, { useContext, createContext } from 'react';
-import { ItemTracker } from '../hooks';
+import { createContext, useContext } from "react";
+import type { ItemTracker } from "../hooks";
 
-const Context = createContext({} as ItemTracker);
+const Context = createContext(new Map() as ItemTracker);
 
 export const useItemTrackerContext = () => useContext(Context);
 
 export interface ItemTrackerProviderProps {
-  value: ItemTracker;
-  children?: React.ReactNode;
+    value: ItemTracker;
+    children?: React.ReactNode;
 }
 
 export const ItemTrackerProvider: React.FC<ItemTrackerProviderProps> = (
-  props
+    props,
 ) => <Context.Provider {...props} />;

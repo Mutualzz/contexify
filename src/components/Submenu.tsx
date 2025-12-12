@@ -1,133 +1,174 @@
-import React, { ReactNode, useRef } from 'react';
-import cx from 'clsx';
+import { type FC, type ReactNode, useRef, useState } from "react";
 
-import { InternalProps, BooleanPredicate, HandlerParamsEvent } from '../types';
+import type { CSSObject } from "@emotion/react";
+import { Button, Paper, type PaperProps, useTheme } from "@mutualzz/ui-web";
+import { useItemTracker } from "../hooks";
+import type {
+    BooleanPredicate,
+    HandlerParamsEvent,
+    InternalProps,
+} from "../types";
+import { cloneItems, getPredicateValue } from "../utils";
+import { Arrow } from "./Arrow";
 import {
-  ItemTrackerProvider,
-  useItemTrackerContext,
-} from './ItemTrackerProvider';
-import { useItemTracker } from '../hooks';
-import { CssClass } from '../constants';
-import { cloneItems, getPredicateValue } from './utils';
-import { Arrow } from './Arrow';
-import { RightSlot } from './RightSlot';
+    ItemTrackerProvider,
+    useItemTrackerContext,
+} from "./ItemTrackerProvider";
 
 export interface SubMenuProps
-  extends InternalProps,
-    Omit<React.HTMLAttributes<HTMLElement>, 'hidden'> {
-  /**
-   * Any valid node that can be rendered
-   */
-  label: ReactNode;
+    extends InternalProps, Omit<PaperProps, "hidden" | "disabled" | "style"> {
+    /**
+     * Any valid node that can be rendered
+     */
+    label: ReactNode;
 
-  /**
-   * Any valid node that can be rendered
-   */
-  children: ReactNode;
+    /**
+     * Any valid node that can be rendered
+     */
+    children: ReactNode;
 
-  /**
-   * Render a custom arrow
-   */
-  arrow?: ReactNode;
+    /**
+     * Render a custom arrow
+     */
+    arrow?: ReactNode;
 
-  /**
-   * Disable the `Submenu`. If a function is used, a boolean must be returned
-   */
-  disabled?: BooleanPredicate;
+    /**
+     * Disable the `Submenu`. If a function is used, a boolean must be returned
+     */
+    disabled?: BooleanPredicate;
 
-  /**
-   * Hide the `Submenu` and his children. If a function is used, a boolean must be returned
-   */
-  hidden?: BooleanPredicate;
+    /**
+     * Hide the `Submenu` and his children. If a function is used, a boolean must be returned
+     */
+    hidden?: BooleanPredicate;
+
+    style?: CSSObject;
 }
 
-export const Submenu: React.FC<SubMenuProps> = ({
-  arrow,
-  children,
-  disabled = false,
-  hidden = false,
-  label,
-  className,
-  triggerEvent,
-  propsFromTrigger,
-  style,
-  ...rest
+export const Submenu: FC<SubMenuProps> = ({
+    arrow,
+    children,
+    disabled = false,
+    hidden = false,
+    label,
+    color,
+    triggerEvent,
+    propsFromTrigger,
+    style,
+    ...rest
 }) => {
-  const parentItemTracker = useItemTrackerContext();
-  const itemTracker = useItemTracker();
-  const submenuNode = useRef<HTMLDivElement>(null);
-  const handlerParams = {
-    triggerEvent: triggerEvent as HandlerParamsEvent,
-    props: propsFromTrigger,
-  };
-  const isDisabled = getPredicateValue(disabled, handlerParams);
-  const isHidden = getPredicateValue(hidden, handlerParams);
+    const { theme } = useTheme();
 
-  function setPosition() {
-    const node = submenuNode.current;
-    if (node) {
-      const bottom = `${CssClass.submenu}-bottom`;
-      const right = `${CssClass.submenu}-right`;
+    const parentItemTracker = useItemTrackerContext();
+    const itemTracker = useItemTracker();
+    const submenuNode = useRef<HTMLDivElement>(null);
+    const handlerParams = {
+        triggerEvent: triggerEvent as HandlerParamsEvent,
+        props: propsFromTrigger,
+    };
+    const isDisabled = getPredicateValue(disabled, handlerParams);
+    const isHidden = getPredicateValue(hidden, handlerParams);
+    const [hovered, setHovered] = useState(false);
 
-      // reset to default position before computing position
-      node.classList.remove(bottom, right);
+    function setPosition() {
+        const node = submenuNode.current;
+        if (node) {
+            const rect = node.getBoundingClientRect();
 
-      const rect = node.getBoundingClientRect();
+            const sidePadding = `calc(100% + ${theme.spacing(2.5)})`;
+            const negativePadding = `calc(-1 * ${theme.spacing(2)})`;
 
-      if (rect.right > window.innerWidth) node.classList.add(right);
+            node.style.top = negativePadding;
+            node.style.left = sidePadding;
+            node.style.bottom = "unset";
+            node.style.right = "unset";
 
-      if (rect.bottom > window.innerHeight) node.classList.add(bottom);
+            if (rect.right > window.innerWidth) {
+                node.style.right = sidePadding;
+                node.style.left = "unset";
+            }
+
+            if (rect.bottom > window.innerHeight) {
+                node.style.top = "unset";
+                node.style.bottom = negativePadding;
+            }
+        }
     }
-  }
 
-  function trackRef(node: HTMLElement | null) {
-    if (node && !isDisabled)
-      parentItemTracker.set(node, {
-        node,
-        isSubmenu: true,
-        submenuRefTracker: itemTracker,
-        setSubmenuPosition: setPosition,
-      });
-  }
+    function trackRef(node: HTMLElement | null) {
+        if (node && !isDisabled)
+            parentItemTracker.set(node, {
+                node,
+                isSubmenu: true,
+                submenuRefTracker: itemTracker,
+                setSubmenuPosition: setPosition,
+            });
+    }
 
-  if (isHidden) return null;
+    if (isHidden) return null;
 
-  const cssClasses = cx(CssClass.item, className, {
-    [`${CssClass.itemDisabled}`]: isDisabled,
-  });
-
-  return (
-    <ItemTrackerProvider value={itemTracker}>
-      <div
-        {...rest}
-        className={cssClasses}
-        ref={trackRef}
-        tabIndex={-1}
-        role="menuitem"
-        aria-haspopup
-        aria-disabled={isDisabled}
-        onMouseEnter={setPosition}
-        onTouchStart={setPosition}
-      >
-        <div
-          className={CssClass.itemContent}
-          onClick={(e) => e.stopPropagation()}
-        >
-          {label}
-          <RightSlot>{arrow || <Arrow />}</RightSlot>
-        </div>
-        <div
-          className={`${CssClass.menu} ${CssClass.submenu}`}
-          ref={submenuNode}
-          style={style}
-        >
-          {cloneItems(children, {
-            propsFromTrigger,
-            // @ts-ignore: injected by the parent
-            triggerEvent,
-          })}
-        </div>
-      </div>
-    </ItemTrackerProvider>
-  );
+    return (
+        <ItemTrackerProvider value={itemTracker}>
+            <Paper
+                {...rest}
+                ref={trackRef}
+                position="relative"
+                tabIndex={-1}
+                role="menuitem"
+                aria-haspopup
+                aria-disabled={isDisabled}
+                onMouseEnter={setPosition}
+                onTouchStart={setPosition}
+                onMouseOver={() => setHovered(true)}
+                onMouseLeave={() => setHovered(false)}
+                variant="plain"
+                color="neutral"
+            >
+                <Button
+                    variant="plain"
+                    aria-disabled={isDisabled}
+                    color="neutral"
+                    disabled={isDisabled}
+                    horizontalAlign="left"
+                    size="sm"
+                    css={{
+                        width: "100%",
+                        borderRadius: 6,
+                    }}
+                    endDecorator={arrow ?? <Arrow />}
+                >
+                    {label}
+                </Button>
+                <Paper
+                    {...rest}
+                    position="absolute"
+                    spacing={1}
+                    ref={submenuNode}
+                    role="menu"
+                    tabIndex={-1}
+                    elevation={5}
+                    boxShadow={2}
+                    borderRadius={8}
+                    minWidth="10rem"
+                    boxSizing="border-box"
+                    zIndex={theme.zIndex.tooltip}
+                    visibility={hovered ? "visible" : "hidden"}
+                    padding={2}
+                    css={{
+                        transition: "opacity .265s",
+                        pointerEvents: "auto",
+                        opacity: hovered ? 1 : 0,
+                        ...style,
+                    }}
+                    transparency={10}
+                >
+                    {cloneItems(children, {
+                        propsFromTrigger,
+                        // @ts-ignore: injected by the parent
+                        triggerEvent,
+                    })}
+                </Paper>
+            </Paper>
+        </ItemTrackerProvider>
+    );
 };

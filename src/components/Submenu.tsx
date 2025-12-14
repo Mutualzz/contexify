@@ -75,7 +75,7 @@ export const Submenu: FC<SubMenuProps> = ({
         if (node) {
             const rect = node.getBoundingClientRect();
 
-            const sidePadding = `calc(100% + ${theme.spacing(2.5)})`;
+            const sidePadding = `calc(100% + ${theme.spacing(3)})`;
             const negativePadding = `calc(-1 * ${theme.spacing(2)})`;
 
             node.style.top = negativePadding;
@@ -110,7 +110,6 @@ export const Submenu: FC<SubMenuProps> = ({
     return (
         <ItemTrackerProvider value={itemTracker}>
             <Paper
-                {...rest}
                 ref={trackRef}
                 position="relative"
                 tabIndex={-1}
@@ -121,8 +120,8 @@ export const Submenu: FC<SubMenuProps> = ({
                 onTouchStart={setPosition}
                 onMouseOver={() => setHovered(true)}
                 onMouseLeave={() => setHovered(false)}
+                {...rest}
                 variant="plain"
-                color="neutral"
             >
                 <Button
                     variant="plain"
@@ -140,7 +139,6 @@ export const Submenu: FC<SubMenuProps> = ({
                     {label}
                 </Button>
                 <Paper
-                    {...rest}
                     position="absolute"
                     spacing={1}
                     ref={submenuNode}
@@ -160,11 +158,11 @@ export const Submenu: FC<SubMenuProps> = ({
                         opacity: hovered ? 1 : 0,
                         ...style,
                     }}
-                    transparency={10}
+                    {...rest}
                 >
                     {cloneItems(children, {
                         propsFromTrigger,
-                        // @ts-ignore: injected by the parent
+                        // @ts-expect-error: injected by the parent
                         triggerEvent,
                     })}
                 </Paper>

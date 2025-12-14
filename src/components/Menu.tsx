@@ -63,7 +63,7 @@ function reducer(
     return { ...state, ...(isFn(payload) ? payload(state) : payload) };
 }
 
-export const Menu = forwardRef<HTMLDivElement, MenuProps>(
+const Menu = forwardRef<HTMLDivElement, MenuProps>(
     (
         {
             id,
@@ -240,7 +240,6 @@ export const Menu = forwardRef<HTMLDivElement, MenuProps>(
             <ItemTrackerProvider value={itemTracker}>
                 {visible && (
                     <Paper
-                        {...rest}
                         position="fixed"
                         direction="column"
                         spacing={1}
@@ -262,7 +261,7 @@ export const Menu = forwardRef<HTMLDivElement, MenuProps>(
                         padding={2}
                         ref={ref ?? nodeRef}
                         role="menu"
-                        transparency={10}
+                        {...rest}
                     >
                         {cloneItems(children, {
                             propsFromTrigger,
@@ -274,3 +273,7 @@ export const Menu = forwardRef<HTMLDivElement, MenuProps>(
         );
     },
 );
+
+Menu.displayName = "Menu";
+
+export { Menu };

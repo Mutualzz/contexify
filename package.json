@@ -6,9 +6,9 @@
     },
     "description": "Add contextmenu to your react component with ease",
     "devDependencies": {
+        "@mutualzz/eslint-config": "workspace:*",
         "bunchee": "^6.6.2",
         "eslint": "^9.39.1",
-        "@mutualzz/eslint-config": "workspace:*",
         "prettier-plugin-organize-imports": "^4.3.0"
     },
     "exports": {
@@ -26,11 +26,11 @@
     "module": "./dist/index.mjs",
     "name": "@mutualzz/contexify",
     "peerDependencies": {
-        "@emotion/react": "^11.14.0",
-        "@emotion/styled": "^11.14.1",
-        "@types/react": "^17.0.0 || ^18.0.0 || ^19.0.0",
-        "react": "^17.0.0 || ^18.0.0 || ^19.0.0",
-        "react-dom": "^17.0.0 || ^18.0.0 || ^19.0.0"
+        "@emotion/react": "*",
+        "@emotion/styled": "*",
+        "@types/react": "*",
+        "react": "*",
+        "react-dom": "*"
     },
     "repository": {
         "type": "git",

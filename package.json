@@ -26,11 +26,11 @@
     "module": "./dist/index.mjs",
     "name": "@mutualzz/contexify",
     "peerDependencies": {
-        "@emotion/react": "*",
-        "@emotion/styled": "*",
-        "@types/react": "*",
-        "react": "*",
-        "react-dom": "*"
+        "@emotion/react": "11.14.0",
+        "@emotion/styled": "11.14.1",
+        "@types/react": "19.1.10",
+        "react": "19.1.0",
+        "react-dom": "19.1.0"
     },
     "repository": {
         "type": "git",
@@ -45,7 +45,6 @@
         "test:watch": "jest --watch",
         "typecheck": "tsc --noEmit"
     },
-    "sideEffects": false,
     "types": "./dist/index.d.ts",
     "version": "6.0.0"
 }

@@ -1,4 +1,4 @@
-import react from '@mutualzz/eslint-config/react';
+import { react } from "@mutualzz/eslint-config";
 
 export default [
   ...react,

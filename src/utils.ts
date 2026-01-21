@@ -7,11 +7,12 @@ import {
 
 import type { BooleanPredicate, PredicateParams, TriggerEvent } from "./types";
 
+// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 export function isFn(v: any): v is Function {
     return typeof v === "function";
 }
 
-export function isStr(v: any): v is String {
+export function isStr(v: any): v is string {
     return typeof v === "string";
 }
 
@@ -34,6 +35,7 @@ export function getMousePosition(e: TriggerEvent) {
 
     const touch = (e as TouchEvent).changedTouches;
 
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (touch) {
         pos.x = touch[0].clientX;
         pos.y = touch[0].clientY;

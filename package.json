@@ -7,7 +7,7 @@
     "description": "Add contextmenu to your react component with ease",
     "devDependencies": {
         "@mutualzz/eslint-config": "workspace:*",
-        "bunchee": "^6.9.3",
+        "bunchee": "^6.9.4",
         "eslint": "^9.39.2",
         "prettier-plugin-organize-imports": "^4.3.0"
     },

@@ -234,8 +234,6 @@ const Menu = forwardRef<HTMLDivElement, MenuProps>(
 
         const { visible, triggerEvent, propsFromTrigger, x, y } = state;
 
-        // TODO: switch to translate instead of top left
-        // requires an additional dom element around the menu
         return (
             <ItemTrackerProvider value={itemTracker}>
                 {visible && (

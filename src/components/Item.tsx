@@ -125,6 +125,7 @@ export const Item: FC<ItemProps> = ({
     children,
     className,
     style,
+    color,
     triggerEvent,
     data,
     propsFromTrigger,
@@ -211,7 +212,7 @@ export const Item: FC<ItemProps> = ({
             disabled={isDisabled}
             horizontalAlign="left"
             variant="plain"
-            color="neutral"
+            color={color ?? "#ffffff"}
             size="sm"
             css={{
                 borderRadius: 6,

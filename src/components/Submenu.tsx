@@ -126,7 +126,7 @@ export const Submenu: FC<SubMenuProps> = ({
                 <Button
                     variant="plain"
                     aria-disabled={isDisabled}
-                    color="neutral"
+                    color={color ?? "#ffffff"}
                     disabled={isDisabled}
                     horizontalAlign="left"
                     size="sm"

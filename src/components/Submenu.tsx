@@ -1,4 +1,4 @@
-import { type FC, type ReactNode, useRef, useState } from "react";
+import { type FC, type ReactNode, useEffect, useRef, useState } from "react";
 
 import type { CSSObject } from "@emotion/react";
 import { Button, Paper, type PaperProps, useTheme } from "@mutualzz/ui-web";
@@ -17,33 +17,16 @@ import {
 
 export interface SubMenuProps
     extends InternalProps, Omit<PaperProps, "hidden" | "disabled" | "style"> {
-    /**
-     * Any valid node that can be rendered
-     */
     label: ReactNode;
-
-    /**
-     * Any valid node that can be rendered
-     */
     children: ReactNode;
-
-    /**
-     * Render a custom arrow
-     */
     arrow?: ReactNode;
-
-    /**
-     * Disable the `Submenu`. If a function is used, a boolean must be returned
-     */
     disabled?: BooleanPredicate;
-
-    /**
-     * Hide the `Submenu` and his children. If a function is used, a boolean must be returned
-     */
     hidden?: BooleanPredicate;
-
+    inverted?: boolean;
     style?: CSSObject;
 }
+
+const CLOSE_DELAY_MS = 140;
 
 export const Submenu: FC<SubMenuProps> = ({
     arrow,
@@ -55,6 +38,7 @@ export const Submenu: FC<SubMenuProps> = ({
     triggerEvent,
     propsFromTrigger,
     style,
+    inverted,
     ...rest
 }) => {
     const { theme } = useTheme();
@@ -62,47 +46,76 @@ export const Submenu: FC<SubMenuProps> = ({
     const parentItemTracker = useItemTrackerContext();
     const itemTracker = useItemTracker();
     const submenuNode = useRef<HTMLDivElement>(null);
+
     const handlerParams = {
         triggerEvent: triggerEvent as HandlerParamsEvent,
         props: propsFromTrigger,
     };
+
     const isDisabled = getPredicateValue(disabled, handlerParams);
     const isHidden = getPredicateValue(hidden, handlerParams);
-    const [hovered, setHovered] = useState(false);
+
+    const closeTimer = useRef<number | null>(null);
+    const [open, setOpen] = useState(false);
+
+    function clearCloseTimer() {
+        if (closeTimer.current != null) {
+            window.clearTimeout(closeTimer.current);
+            closeTimer.current = null;
+        }
+    }
+
+    function scheduleClose() {
+        clearCloseTimer();
+        closeTimer.current = window.setTimeout(() => {
+            setOpen(false);
+            closeTimer.current = null;
+        }, CLOSE_DELAY_MS);
+    }
+
+    useEffect(() => {
+        return () => clearCloseTimer();
+    }, []);
 
     function setPosition() {
         const node = submenuNode.current;
-        if (node) {
-            const rect = node.getBoundingClientRect();
+        if (!node) return;
 
-            const sidePadding = `calc(100% + ${theme.spacing(3)})`;
-            const negativePadding = `calc(-1 * ${theme.spacing(2)})`;
+        const sidePadding = `calc(100% + ${theme.spacing(3)})`;
+        const negativePadding = `calc(-1 * ${theme.spacing(2)})`;
 
-            node.style.top = negativePadding;
-            node.style.left = sidePadding;
-            node.style.bottom = "unset";
-            node.style.right = "unset";
+        node.style.top = negativePadding;
+        node.style.left = sidePadding;
+        node.style.bottom = "unset";
+        node.style.right = "unset";
 
-            if (rect.right > window.innerWidth) {
-                node.style.right = sidePadding;
-                node.style.left = "unset";
-            }
+        let rect = node.getBoundingClientRect();
 
-            if (rect.bottom > window.innerHeight) {
-                node.style.top = "unset";
-                node.style.bottom = negativePadding;
-            }
+        const vw = document.documentElement.clientWidth;
+        const vh = document.documentElement.clientHeight;
+
+        if (rect.right > vw && rect.width < rect.left) {
+            node.style.right = sidePadding;
+            node.style.left = "unset";
+            rect = node.getBoundingClientRect();
+        }
+
+        if (rect.bottom > vh && rect.height < rect.top) {
+            node.style.top = "unset";
+            node.style.bottom = negativePadding;
+            rect = node.getBoundingClientRect();
         }
     }
 
     function trackRef(node: HTMLElement | null) {
-        if (node && !isDisabled)
+        if (node && !isDisabled) {
             parentItemTracker.set(node, {
                 node,
                 isSubmenu: true,
                 submenuRefTracker: itemTracker,
                 setSubmenuPosition: setPosition,
             });
+        }
     }
 
     if (isHidden) return null;
@@ -116,12 +129,24 @@ export const Submenu: FC<SubMenuProps> = ({
                 role="menuitem"
                 aria-haspopup
                 aria-disabled={isDisabled}
-                onMouseEnter={setPosition}
-                onTouchStart={setPosition}
-                onMouseOver={() => setHovered(true)}
-                onMouseLeave={() => setHovered(false)}
-                {...rest}
                 variant="plain"
+                onPointerEnter={() => {
+                    if (isDisabled) return;
+                    clearCloseTimer();
+                    setPosition();
+                    setOpen(true);
+                }}
+                onPointerLeave={() => {
+                    if (isDisabled) return;
+                    scheduleClose();
+                }}
+                onTouchStart={() => {
+                    if (isDisabled) return;
+                    clearCloseTimer();
+                    setPosition();
+                    setOpen(true);
+                }}
+                {...rest}
             >
                 <Button
                     variant="plain"
@@ -130,14 +155,14 @@ export const Submenu: FC<SubMenuProps> = ({
                     disabled={isDisabled}
                     horizontalAlign="left"
                     size="sm"
-                    css={{
-                        width: "100%",
-                        borderRadius: 6,
-                    }}
-                    endDecorator={arrow ?? <Arrow />}
+                    css={{ width: "100%", borderRadius: 6 }}
+                    {...(inverted
+                        ? { startDecorator: arrow ?? <Arrow /> }
+                        : { endDecorator: arrow ?? <Arrow /> })}
                 >
                     {label}
                 </Button>
+
                 <Paper
                     position="absolute"
                     spacing={1}
@@ -149,20 +174,22 @@ export const Submenu: FC<SubMenuProps> = ({
                     borderRadius={8}
                     minWidth="10rem"
                     boxSizing="border-box"
+                    color={color as string}
                     zIndex={theme.zIndex.tooltip}
-                    visibility={hovered ? "visible" : "hidden"}
+                    direction="column"
                     padding={2}
                     css={{
-                        transition: "opacity .265s",
-                        pointerEvents: "auto",
-                        opacity: hovered ? 1 : 0,
+                        transition: "opacity .12s",
+                        opacity: open ? 1 : 0,
+                        visibility: open ? "visible" : "hidden",
+                        pointerEvents: open ? "auto" : "none",
                         ...style,
                     }}
                     {...rest}
                 >
                     {cloneItems(children, {
                         propsFromTrigger,
-                        // @ts-expect-error: injected by the parent
+                        // @ts-expect-error injected by parent
                         triggerEvent,
                     })}
                 </Paper>

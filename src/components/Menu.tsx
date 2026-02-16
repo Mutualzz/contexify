@@ -19,31 +19,23 @@ import type { MenuId, TriggerEvent } from "../types";
 import { cloneItems, getMousePosition, isFn } from "../utils";
 import { createKeyboardController } from "./keyboardController";
 
+function emitVisibility(id: MenuId, visible: boolean) {
+    try {
+        window.dispatchEvent(
+            new CustomEvent("mutualzz:contextmenu:visibility", {
+                detail: { id: String(id), visible },
+            }),
+        );
+    } catch (err) {
+        console.error("[Contexify] Failed to emit visibility event", err);
+    }
+}
+
 export interface MenuProps extends Omit<PaperProps, "id"> {
-    /**
-     * Unique id to identify the menu. Use to Trigger the corresponding menu
-     */
     id: MenuId;
-
-    /**
-     * Any valid node that can be rendered
-     */
     children: ReactNode;
-
-    /**
-     * Disables menu repositioning if outside screen.
-     * This may be needed in some cases when using custom position.
-     */
     disableBoundariesCheck?: boolean;
-
-    /**
-     * Prevents scrolling the window on when typing. Defaults to true.
-     */
     preventDefaultOnKeydown?: boolean;
-
-    /**
-     * Used to track menu visibility
-     */
     onVisibilityChange?: (isVisible: boolean) => void;
 }
 
@@ -88,6 +80,7 @@ const Menu = forwardRef<HTMLDivElement, MenuProps>(
             propsFromTrigger: null,
             willLeave: false,
         });
+
         const nodeRef = useRef<HTMLDivElement>(null);
         const itemTracker = useItemTracker();
         const [menuController] = useState(() => createKeyboardController());
@@ -101,7 +94,6 @@ const Menu = forwardRef<HTMLDivElement, MenuProps>(
             return () => {
                 eventManager.off(id, show).off(EVENT.HIDE_ALL, hide);
             };
-            // hide rely on setState(dispatch), which is guaranteed to be the same across render
         }, [id, disableBoundariesCheck]);
 
         // collect menu items for keyboard navigation
@@ -118,7 +110,6 @@ const Menu = forwardRef<HTMLDivElement, MenuProps>(
 
                 if (x + offsetWidth > innerWidth)
                     x -= x + offsetWidth - innerWidth;
-
                 if (y + offsetHeight > innerHeight)
                     y -= y + offsetHeight - innerHeight;
             }
@@ -126,10 +117,7 @@ const Menu = forwardRef<HTMLDivElement, MenuProps>(
             return { x, y };
         }
 
-        // when the menu is transitioning from not visible to visible,
-        // the nodeRef is attached to the dom element this let us check the boundaries
         useEffect(() => {
-            // state.visible and state{x,y} are updated together
             if (state.visible) setState(checkBoundaries(state.x, state.y));
         }, [state.visible]);
 
@@ -170,25 +158,34 @@ const Menu = forwardRef<HTMLDivElement, MenuProps>(
                 }
             }
 
+            // ✅ only close on interactions OUTSIDE the menu
+            function hideIfOutside(e: Event) {
+                const root = (ref as any)?.current ?? nodeRef.current;
+                const t = e.target as Node | null;
+                if (!root || !t) return;
+
+                if (root.contains(t)) return;
+                hide(e);
+            }
+
             if (state.visible) {
                 window.addEventListener("keydown", handleKeyboard);
 
                 for (const ev of hideOnEvents)
-                    window.addEventListener(ev, hide);
+                    window.addEventListener(ev, hideIfOutside);
             }
 
             return () => {
                 window.removeEventListener("keydown", handleKeyboard);
 
                 for (const ev of hideOnEvents)
-                    window.removeEventListener(ev, hide);
+                    window.removeEventListener(ev, hideIfOutside);
             };
-        }, [state.visible, menuController, preventDefaultOnKeydown]);
+        }, [state.visible, menuController, preventDefaultOnKeydown, ref]);
 
         function show({ event, props, position }: ShowContextMenuParams) {
             event.stopPropagation();
             const p = position || getMousePosition(event);
-            // check boundaries when the menu is already visible
             const { x, y } = checkBoundaries(p.x, p.y);
 
             flushSync(() => {
@@ -207,6 +204,8 @@ const Menu = forwardRef<HTMLDivElement, MenuProps>(
                 onVisibilityChange(true);
                 wasVisible.current = true;
             }
+
+            emitVisibility(id, true);
         }
 
         function hide(e?: Event) {
@@ -214,21 +213,18 @@ const Menu = forwardRef<HTMLDivElement, MenuProps>(
 
             if (
                 e != null &&
-                // Safari trigger a click event when you ctrl + trackpad
                 ((e as SafariEvent).button === 2 ||
                     (e as SafariEvent).ctrlKey) &&
-                // Firefox trigger a click event when right click occur
                 e.type !== "contextmenu"
             )
                 return;
 
-            setState((state) => ({
-                visible: state.visible ? false : state.visible,
-            }));
+            setState((s) => ({ visible: s.visible ? false : s.visible }));
 
             visibilityId.current = window?.setTimeout(() => {
                 isFn(onVisibilityChange) && onVisibilityChange(false);
                 wasVisible.current = false;
+                emitVisibility(id, false);
             });
         }
 
@@ -273,5 +269,4 @@ const Menu = forwardRef<HTMLDivElement, MenuProps>(
 );
 
 Menu.displayName = "Menu";
-
 export { Menu };

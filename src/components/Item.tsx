@@ -1,15 +1,9 @@
 import React, { type FC, type ReactNode, useRef } from "react";
 
-import { Button, type ButtonProps } from "@mutualzz/ui-web";
+import { Button, type ButtonProps, useTheme } from "@mutualzz/ui-web";
 import { NOOP } from "../constants";
 import { contextMenu } from "../core";
-import type {
-    BooleanPredicate,
-    BuiltInOrString,
-    HandlerParamsEvent,
-    InternalProps,
-    ItemParams,
-} from "../types";
+import type { BooleanPredicate, BuiltInOrString, HandlerParamsEvent, InternalProps, ItemParams, } from "../types";
 import { getPredicateValue, isFn } from "../utils";
 import { useItemTrackerContext } from "./ItemTrackerProvider";
 
@@ -43,6 +37,7 @@ export const Item: FC<ItemProps> = ({
     handlerEvent = "onClick",
     ...rest
 }) => {
+    const { theme } = useTheme();
     const itemNode = useRef<HTMLElement>(undefined);
     const itemTracker = useItemTrackerContext();
 
@@ -120,7 +115,7 @@ export const Item: FC<ItemProps> = ({
             disabled={isDisabled}
             horizontalAlign="left"
             variant="plain"
-            color={color ?? "#ffffff"}
+            color={color ?? theme.colors.surface}
             size="sm"
             css={{
                 borderRadius: 6,

@@ -24,6 +24,7 @@ export interface SubMenuProps
     hidden?: BooleanPredicate;
     inverted?: boolean;
     style?: CSSObject;
+    decorator?: ReactNode;
 }
 
 const CLOSE_DELAY_MS = 140;
@@ -39,6 +40,7 @@ export const Submenu: FC<SubMenuProps> = ({
     propsFromTrigger,
     style,
     inverted,
+    decorator,
     ...rest
 }) => {
     const { theme } = useTheme();
@@ -156,9 +158,14 @@ export const Submenu: FC<SubMenuProps> = ({
                     horizontalAlign="left"
                     size="sm"
                     css={{ width: "100%", borderRadius: 6 }}
-                    {...(inverted
-                        ? { startDecorator: arrow ?? <Arrow /> }
-                        : { endDecorator: arrow ?? <Arrow /> })}
+                    startDecorator={
+                        decorator
+                            ? decorator
+                            : inverted
+                              ? (arrow ?? <Arrow />)
+                              : undefined
+                    }
+                    endDecorator={arrow ?? <Arrow />}
                 >
                     {label}
                 </Button>

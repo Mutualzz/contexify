@@ -3,17 +3,10 @@ import { type FC, type ReactNode, useEffect, useRef, useState } from "react";
 import type { CSSObject } from "@emotion/react";
 import { Button, Paper, type PaperProps, useTheme } from "@mutualzz/ui-web";
 import { useItemTracker } from "../hooks";
-import type {
-    BooleanPredicate,
-    HandlerParamsEvent,
-    InternalProps,
-} from "../types";
+import type { BooleanPredicate, HandlerParamsEvent, InternalProps, } from "../types";
 import { cloneItems, getPredicateValue } from "../utils";
 import { Arrow } from "./Arrow";
-import {
-    ItemTrackerProvider,
-    useItemTrackerContext,
-} from "./ItemTrackerProvider";
+import { ItemTrackerProvider, useItemTrackerContext, } from "./ItemTrackerProvider";
 
 export interface SubMenuProps
     extends InternalProps, Omit<PaperProps, "hidden" | "disabled" | "style"> {
@@ -153,7 +146,8 @@ export const Submenu: FC<SubMenuProps> = ({
                 <Button
                     variant="plain"
                     aria-disabled={isDisabled}
-                    color={color ?? "#ffffff"}
+                    color={color}
+                    textColor={theme.typography.colors.primary}
                     disabled={isDisabled}
                     horizontalAlign="left"
                     size="sm"

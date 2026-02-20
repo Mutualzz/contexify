@@ -115,7 +115,8 @@ export const Item: FC<ItemProps> = ({
             disabled={isDisabled}
             horizontalAlign="left"
             variant="plain"
-            color={color ?? theme.colors.surface}
+            color={color}
+            textColor={theme.typography.colors.primary}
             size="sm"
             css={{
                 borderRadius: 6,

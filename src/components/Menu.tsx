@@ -1,11 +1,4 @@
-import {
-    forwardRef,
-    type ReactNode,
-    useEffect,
-    useReducer,
-    useRef,
-    useState,
-} from "react";
+import { forwardRef, type ReactNode, useEffect, useReducer, useRef, useState, } from "react";
 
 import { ItemTrackerProvider } from "./ItemTrackerProvider";
 
@@ -158,7 +151,6 @@ const Menu = forwardRef<HTMLDivElement, MenuProps>(
                 }
             }
 
-            // ✅ only close on interactions OUTSIDE the menu
             function hideIfOutside(e: Event) {
                 const root = (ref as any)?.current ?? nodeRef.current;
                 const t = e.target as Node | null;

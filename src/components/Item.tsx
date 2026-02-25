@@ -34,6 +34,7 @@ export const Item: FC<ItemProps> = ({
     disabled = false,
     hidden = false,
     closeOnClick = true,
+    textColor,
     handlerEvent = "onClick",
     ...rest
 }) => {
@@ -116,7 +117,7 @@ export const Item: FC<ItemProps> = ({
             horizontalAlign="left"
             variant="plain"
             color={color}
-            textColor={theme.typography.colors.primary}
+            textColor={textColor}
             size="sm"
             css={{
                 borderRadius: 6,

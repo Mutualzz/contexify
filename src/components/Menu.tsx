@@ -59,6 +59,7 @@ const Menu = forwardRef<HTMLDivElement, MenuProps>(
             preventDefaultOnKeydown = true,
             disableBoundariesCheck = false,
             onVisibilityChange,
+
             ...rest
         },
         ref,

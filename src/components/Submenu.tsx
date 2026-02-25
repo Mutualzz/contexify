@@ -3,10 +3,17 @@ import { type FC, type ReactNode, useEffect, useRef, useState } from "react";
 import type { CSSObject } from "@emotion/react";
 import { Button, Paper, type PaperProps, useTheme } from "@mutualzz/ui-web";
 import { useItemTracker } from "../hooks";
-import type { BooleanPredicate, HandlerParamsEvent, InternalProps, } from "../types";
+import type {
+    BooleanPredicate,
+    HandlerParamsEvent,
+    InternalProps,
+} from "../types";
 import { cloneItems, getPredicateValue } from "../utils";
 import { Arrow } from "./Arrow";
-import { ItemTrackerProvider, useItemTrackerContext, } from "./ItemTrackerProvider";
+import {
+    ItemTrackerProvider,
+    useItemTrackerContext,
+} from "./ItemTrackerProvider";
 
 export interface SubMenuProps
     extends InternalProps, Omit<PaperProps, "hidden" | "disabled" | "style"> {
@@ -34,6 +41,7 @@ export const Submenu: FC<SubMenuProps> = ({
     style,
     inverted,
     decorator,
+    textColor,
     ...rest
 }) => {
     const { theme } = useTheme();
@@ -147,7 +155,7 @@ export const Submenu: FC<SubMenuProps> = ({
                     variant="plain"
                     aria-disabled={isDisabled}
                     color={color}
-                    textColor={theme.typography.colors.primary}
+                    textColor={textColor as any}
                     disabled={isDisabled}
                     horizontalAlign="left"
                     size="sm"
@@ -156,7 +164,7 @@ export const Submenu: FC<SubMenuProps> = ({
                         decorator
                             ? decorator
                             : inverted
-                              ? (arrow ?? <Arrow />)
+                              ? (arrow ?? <Arrow inverted />)
                               : undefined
                     }
                     endDecorator={arrow ?? <Arrow />}

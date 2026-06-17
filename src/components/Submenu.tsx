@@ -1,9 +1,16 @@
-import { type FC, type MouseEvent, type ReactNode, useEffect, useRef, useState } from "react";
+import {
+    type FC,
+    type MouseEvent,
+    type ReactNode,
+    useEffect,
+    useRef,
+    useState,
+} from "react";
 
 import type { CSSObject } from "@emotion/react";
 import { Button, Paper, type PaperProps, useTheme } from "@mutualzz/ui-web";
-import { useItemTracker } from "../hooks";
 import { contextMenu } from "../core";
+import { useItemTracker } from "../hooks";
 import type {
     BooleanPredicate,
     HandlerParamsEvent,
@@ -18,7 +25,9 @@ import {
 } from "./ItemTrackerProvider";
 
 export interface SubMenuProps
-    extends InternalProps, Omit<PaperProps, "hidden" | "disabled" | "style"> {
+    extends
+        InternalProps,
+        Omit<PaperProps, "hidden" | "disabled" | "style" | "onClick"> {
     label: ReactNode;
     children: ReactNode;
     arrow?: ReactNode;
@@ -98,7 +107,7 @@ export const Submenu: FC<SubMenuProps> = ({
         node.style.bottom = "unset";
         node.style.right = "unset";
 
-        let rect = node.getBoundingClientRect();
+        const rect = node.getBoundingClientRect();
 
         const vw = document.documentElement.clientWidth;
         const vh = document.documentElement.clientHeight;
@@ -106,13 +115,11 @@ export const Submenu: FC<SubMenuProps> = ({
         if (rect.right > vw && rect.width < rect.left) {
             node.style.right = sidePadding;
             node.style.left = "unset";
-            rect = node.getBoundingClientRect();
         }
 
         if (rect.bottom > vh && rect.height < rect.top) {
             node.style.top = "unset";
             node.style.bottom = negativePadding;
-            rect = node.getBoundingClientRect();
         }
     }
 

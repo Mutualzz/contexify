@@ -1,12 +1,14 @@
-import { type FC, type ReactNode, useEffect, useRef, useState } from "react";
+import { type FC, type MouseEvent, type ReactNode, useEffect, useRef, useState } from "react";
 
 import type { CSSObject } from "@emotion/react";
 import { Button, Paper, type PaperProps, useTheme } from "@mutualzz/ui-web";
 import { useItemTracker } from "../hooks";
+import { contextMenu } from "../core";
 import type {
     BooleanPredicate,
     HandlerParamsEvent,
     InternalProps,
+    ItemParams,
 } from "../types";
 import { cloneItems, getPredicateValue } from "../utils";
 import { Arrow } from "./Arrow";
@@ -25,6 +27,8 @@ export interface SubMenuProps
     inverted?: boolean;
     style?: CSSObject;
     decorator?: ReactNode;
+    onClick?: (args: ItemParams) => void;
+    closeOnClick?: boolean;
 }
 
 const CLOSE_DELAY_MS = 140;
@@ -42,6 +46,8 @@ export const Submenu: FC<SubMenuProps> = ({
     inverted,
     decorator,
     textColor,
+    onClick,
+    closeOnClick = true,
     ...rest
 }) => {
     const { theme } = useTheme();
@@ -121,6 +127,20 @@ export const Submenu: FC<SubMenuProps> = ({
         }
     }
 
+    function handleButtonClick(event: MouseEvent<HTMLElement>) {
+        if (isDisabled || !onClick) return;
+
+        event.stopPropagation();
+        onClick({
+            ...handlerParams,
+            event,
+        } as ItemParams);
+
+        if (closeOnClick) {
+            contextMenu.hideAll();
+        }
+    }
+
     if (isHidden) return null;
 
     return (
@@ -159,6 +179,7 @@ export const Submenu: FC<SubMenuProps> = ({
                     disabled={isDisabled}
                     horizontalAlign="left"
                     size="sm"
+                    onClick={onClick ? handleButtonClick : undefined}
                     css={{ width: "100%", borderRadius: 6 }}
                     startDecorator={
                         decorator

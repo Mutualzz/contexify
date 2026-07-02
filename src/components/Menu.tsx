@@ -1,4 +1,11 @@
-import { forwardRef, type ReactNode, useEffect, useReducer, useRef, useState, } from "react";
+import {
+    forwardRef,
+    type ReactNode,
+    useEffect,
+    useReducer,
+    useRef,
+    useState,
+} from "react";
 
 import { ItemTrackerProvider } from "./ItemTrackerProvider";
 
@@ -230,7 +237,7 @@ const Menu = forwardRef<HTMLDivElement, MenuProps>(
                         position="fixed"
                         direction="column"
                         spacing={1}
-                        color={color as string}
+                        color={color}
                         css={{
                             left: x,
                             top: y,

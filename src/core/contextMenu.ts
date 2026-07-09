@@ -17,16 +17,21 @@ export interface ShowContextMenuParams<TProps = unknown> {
         x: number;
         y: number;
     } | null;
+    anchorBottom?: {
+        x: number;
+        y: number;
+    } | null;
 }
 
 const contextMenu: ContextMenu = {
-    show({ event, id, props, position }) {
+    show({ event, id, props, position, anchorBottom }) {
         if (event.preventDefault) event.preventDefault();
 
         eventManager.emit(EVENT.HIDE_ALL).emit(id, {
             event: (event as SyntheticEvent).nativeEvent || event,
             props,
             position,
+            anchorBottom,
         });
     },
     hideAll() {

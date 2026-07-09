@@ -2,6 +2,7 @@ import {
     forwardRef,
     type ReactNode,
     useEffect,
+    useLayoutEffect,
     useReducer,
     useRef,
     useState,
@@ -46,6 +47,8 @@ interface MenuState {
     triggerEvent: TriggerEvent;
     propsFromTrigger: any;
     willLeave: boolean;
+    anchorBottom: { x: number; y: number } | null;
+    measuring: boolean;
 }
 
 function reducer(
@@ -80,6 +83,8 @@ const Menu = forwardRef<HTMLDivElement, MenuProps>(
             triggerEvent: {} as TriggerEvent,
             propsFromTrigger: null,
             willLeave: false,
+            anchorBottom: null,
+            measuring: false,
         });
 
         const nodeRef = useRef<HTMLDivElement>(null);
@@ -119,8 +124,23 @@ const Menu = forwardRef<HTMLDivElement, MenuProps>(
         }
 
         useEffect(() => {
-            if (state.visible) setState(checkBoundaries(state.x, state.y));
-        }, [state.visible]);
+            if (state.visible && !state.measuring)
+                setState(checkBoundaries(state.x, state.y));
+        }, [state.visible, state.measuring]);
+
+        useLayoutEffect(() => {
+            if (!state.visible || !state.measuring || !state.anchorBottom)
+                return;
+            if (!nodeRef.current) return;
+
+            const { offsetHeight } = nodeRef.current;
+            const { x, y } = state.anchorBottom;
+
+            setState({
+                ...checkBoundaries(x, Math.max(8, y - offsetHeight)),
+                measuring: false,
+            });
+        }, [state.visible, state.measuring, state.anchorBottom]);
 
         // subscribe dom events
         useEffect(() => {
@@ -183,21 +203,44 @@ const Menu = forwardRef<HTMLDivElement, MenuProps>(
             };
         }, [state.visible, menuController, preventDefaultOnKeydown, ref]);
 
-        function show({ event, props, position }: ShowContextMenuParams) {
+        function show({
+            event,
+            props,
+            position,
+            anchorBottom,
+        }: ShowContextMenuParams) {
             event.stopPropagation();
-            const p = position || getMousePosition(event);
-            const { x, y } = checkBoundaries(p.x, p.y);
 
-            flushSync(() => {
-                setState({
-                    visible: true,
-                    willLeave: false,
-                    x,
-                    y,
-                    triggerEvent: event,
-                    propsFromTrigger: props,
+            if (anchorBottom) {
+                flushSync(() => {
+                    setState({
+                        visible: true,
+                        willLeave: false,
+                        x: anchorBottom.x,
+                        y: anchorBottom.y,
+                        anchorBottom,
+                        measuring: true,
+                        triggerEvent: event,
+                        propsFromTrigger: props,
+                    });
                 });
-            });
+            } else {
+                const p = position || getMousePosition(event);
+                const { x, y } = checkBoundaries(p.x, p.y);
+
+                flushSync(() => {
+                    setState({
+                        visible: true,
+                        willLeave: false,
+                        x,
+                        y,
+                        anchorBottom: null,
+                        measuring: false,
+                        triggerEvent: event,
+                        propsFromTrigger: props,
+                    });
+                });
+            }
 
             clearTimeout(visibilityId.current);
             if (!wasVisible.current && isFn(onVisibilityChange)) {
@@ -228,7 +271,8 @@ const Menu = forwardRef<HTMLDivElement, MenuProps>(
             });
         }
 
-        const { visible, triggerEvent, propsFromTrigger, x, y } = state;
+        const { visible, measuring, triggerEvent, propsFromTrigger, x, y } =
+            state;
 
         return (
             <ItemTrackerProvider value={itemTracker}>
@@ -242,7 +286,7 @@ const Menu = forwardRef<HTMLDivElement, MenuProps>(
                             left: x,
                             top: y,
                             opacity: 1,
-                            visibility: "visible",
+                            visibility: measuring ? "hidden" : "visible",
                             userSelect: "none",
                             ...style,
                         }}

@@ -2,7 +2,9 @@ export const enum EVENT {
     HIDE_ALL,
 }
 
-export const NOOP = () => {};
+export const NOOP = (): void => {
+  return;
+};
 
 export const hideOnEvents: (keyof GlobalEventHandlersEventMap)[] = [
     "resize",

@@ -1,4 +1,5 @@
-import React, { type FC, type ReactNode, useRef } from "react";
+import type React from "react";
+import { type FC, type ReactNode, useRef } from "react";
 
 import { Button, type ButtonProps, useTheme } from "@mutualzz/ui-web";
 import { NOOP } from "../constants";

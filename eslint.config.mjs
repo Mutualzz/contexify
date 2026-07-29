@@ -3,6 +3,7 @@ import { react } from "@mutualzz/eslint-config";
 export default [
   ...react,
   {
+    files: ["src/**/*.{ts,tsx}"],
     languageOptions: {
       parserOptions: {
         projectService: true,

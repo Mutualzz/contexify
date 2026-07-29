@@ -104,9 +104,11 @@ const Menu = forwardRef<HTMLDivElement, MenuProps>(
 
         // collect menu items for keyboard navigation
         useEffect(() => {
-            !state.visible
-                ? itemTracker.clear()
-                : menuController.init(itemTracker);
+            if (!state.visible) {
+                itemTracker.clear();
+            } else {
+                menuController.init(itemTracker);
+            }
         }, [state.visible, menuController, itemTracker]);
 
         function checkBoundaries(x: number, y: number) {
@@ -265,7 +267,7 @@ const Menu = forwardRef<HTMLDivElement, MenuProps>(
             setState((s) => ({ visible: s.visible ? false : s.visible }));
 
             visibilityId.current = window?.setTimeout(() => {
-                isFn(onVisibilityChange) && onVisibilityChange(false);
+                if (isFn(onVisibilityChange)) onVisibilityChange(false);
                 wasVisible.current = false;
                 emitVisibility(id, false);
             });

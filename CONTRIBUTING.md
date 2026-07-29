@@ -3,7 +3,7 @@
 Thanks for wanting to help with **@mutualzz/contexify**.
 
 Contributions are welcome. Redistributing unofficial builds or hosting a
-competing Mutualzz service is still not allowed — see [`LICENSE`](./LICENSE).
+competing Mutualzz service is still not allowed — see [`LICENSE`](https://github.com/Mutualzz/contexify/blob/master/LICENSE).
 
 
 ## Credit

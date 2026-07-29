@@ -126,7 +126,7 @@ export function createKeyboardController() {
                 if (item.isSubmenu && item.submenuRefTracker)
                     walkAndMatch(Array.from(item.submenuRefTracker.values()));
 
-                item.keyMatcher && item.keyMatcher(e);
+                if (item.keyMatcher) item.keyMatcher(e);
             }
         }
         walkAndMatch(currentItems);
